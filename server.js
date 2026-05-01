@@ -13,7 +13,9 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "change-this-secret-before-deployment";
 const MONGODB_URI = process.env.MONGODB_URI;
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
+const IS_VERCEL = Boolean(process.env.VERCEL);
 const DATABASE_MODE = MONGODB_URI ? "mongodb" : "local-json";
+let databaseConnection;
 
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
@@ -68,6 +70,26 @@ let Task = mongoose.model("Task", taskSchema);
 if (!MONGODB_URI && !IS_PRODUCTION) {
   ({ User, Project, Task } = createLocalModels());
 }
+
+async function connectDatabase() {
+  if (MONGODB_URI) {
+    if (mongoose.connection.readyState === 1) return;
+    databaseConnection = databaseConnection || mongoose.connect(MONGODB_URI);
+    await databaseConnection;
+    return;
+  }
+
+  if (IS_PRODUCTION) {
+    throw new Error("MONGODB_URI is required in production. Add it to deployment environment variables.");
+  }
+}
+
+app.use(
+  asyncRoute(async (req, res, next) => {
+    if (req.path.startsWith("/api")) await connectDatabase();
+    next();
+  })
+);
 
 function publicUser(user) {
   return {
@@ -452,7 +474,7 @@ app.use((err, req, res, next) => {
 
 async function start() {
   if (MONGODB_URI) {
-    await mongoose.connect(MONGODB_URI);
+    await connectDatabase();
   } else if (IS_PRODUCTION) {
     console.error("MONGODB_URI is required in production. Add it to Railway service variables.");
     process.exit(1);
@@ -465,7 +487,11 @@ async function start() {
   });
 }
 
-start().catch((error) => {
-  console.error("Failed to start server:", error.message);
-  process.exit(1);
-});
+if (IS_VERCEL) {
+  module.exports = app;
+} else {
+  start().catch((error) => {
+    console.error("Failed to start server:", error.message);
+    process.exit(1);
+  });
+}
