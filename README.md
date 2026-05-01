@@ -48,16 +48,20 @@ Open `http://localhost:3000`.
 
 1. Push this `team-task-manager` folder to a GitHub repository.
 2. Create a new Railway project from the GitHub repo.
-3. Set these Railway variables:
+3. Add a MongoDB database in Railway, or create a MongoDB Atlas cluster and copy its connection string.
+4. Set these Railway variables on the app service:
 
 ```env
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_long_random_secret
+NODE_ENV=production
 ADMIN_INVITE_CODE=optional_admin_code
 ```
 
-4. Deploy. Railway will run `npm install` and `npm start`.
-5. Use the Railway public domain as your Live URL.
+5. Deploy. Railway will run `npm install` and `npm start`.
+6. Use the Railway public domain as your Live URL.
+
+Production requires `MONGODB_URI`. The local JSON fallback is only for development without MongoDB.
 
 ## API Summary
 

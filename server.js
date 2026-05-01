@@ -12,6 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "change-this-secret-before-deployment";
 const MONGODB_URI = process.env.MONGODB_URI;
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 const DATABASE_MODE = MONGODB_URI ? "mongodb" : "local-json";
 
 app.use(cors());
@@ -64,7 +65,7 @@ let User = mongoose.model("User", userSchema);
 let Project = mongoose.model("Project", projectSchema);
 let Task = mongoose.model("Task", taskSchema);
 
-if (!MONGODB_URI) {
+if (!MONGODB_URI && !IS_PRODUCTION) {
   ({ User, Project, Task } = createLocalModels());
 }
 
@@ -452,6 +453,9 @@ app.use((err, req, res, next) => {
 async function start() {
   if (MONGODB_URI) {
     await mongoose.connect(MONGODB_URI);
+  } else if (IS_PRODUCTION) {
+    console.error("MONGODB_URI is required in production. Add it to Railway service variables.");
+    process.exit(1);
   } else {
     console.log(`No MONGODB_URI found. Using local JSON database at ${DATA_PATH}`);
   }
