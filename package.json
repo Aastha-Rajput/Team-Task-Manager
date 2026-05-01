@@ -1,0 +1,29 @@
+{
+  "name": "team-task-manager",
+  "version": "1.0.0",
+  "description": "Full-stack team task manager with projects, assignments, dashboard, and role-based access.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.20.1"
+  },
+  "keywords": [
+    "task-manager",
+    "express",
+    "mongodb",
+    "railway"
+  ],
+  "author": "",
+  "license": "ISC"
+}

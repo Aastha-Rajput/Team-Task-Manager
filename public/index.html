@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Team Task Manager</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar">
+        <div>
+          <p class="eyebrow">Workspace</p>
+          <h1>Team Task Manager</h1>
+        </div>
+        <div class="profile-card hidden" id="profileCard">
+          <span id="profileName"></span>
+          <small id="profileRole"></small>
+        </div>
+        <nav class="nav">
+          <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+          <button class="nav-btn" data-view="projects">Projects</button>
+          <button class="nav-btn" data-view="tasks">Tasks</button>
+          <button class="nav-btn admin-only" data-view="team">Team</button>
+        </nav>
+        <button class="ghost hidden" id="logoutBtn">Logout</button>
+      </aside>
+
+      <section class="content">
+        <section id="authView" class="auth-panel">
+          <div class="auth-copy">
+            <p class="eyebrow">Full-stack assignment</p>
+            <h2>Plan work, assign owners, and track progress.</h2>
+            <p>Create an Admin account first, then add members, projects, and tasks for your demo.</p>
+          </div>
+
+          <form id="authForm" class="panel">
+            <div class="segmented">
+              <button type="button" class="segment active" data-mode="login">Login</button>
+              <button type="button" class="segment" data-mode="signup">Signup</button>
+            </div>
+            <label class="signup-field hidden">
+              Name
+              <input name="name" autocomplete="name" />
+            </label>
+            <label>
+              Email
+              <input name="email" type="email" autocomplete="email" required />
+            </label>
+            <label>
+              Password
+              <input name="password" type="password" autocomplete="current-password" required minlength="6" />
+            </label>
+            <label class="signup-field hidden">
+              Role
+              <select name="role">
+                <option>Admin</option>
+                <option>Member</option>
+              </select>
+            </label>
+            <label class="signup-field hidden">
+              Admin invite code
+              <input name="inviteCode" placeholder="Only if configured" />
+            </label>
+            <button class="primary" type="submit" id="authSubmit">Login</button>
+            <p class="message" id="authMessage"></p>
+          </form>
+        </section>
+
+        <section id="mainView" class="hidden">
+          <header class="topbar">
+            <div>
+              <p class="eyebrow" id="viewEyebrow">Overview</p>
+              <h2 id="viewTitle">Dashboard</h2>
+            </div>
+            <button class="primary admin-only" id="quickTaskBtn">New Task</button>
+          </header>
+
+          <section id="dashboard" class="view active-view">
+            <div class="stats-grid" id="statsGrid"></div>
+            <div class="panel">
+              <div class="panel-head">
+                <h3>Upcoming work</h3>
+              </div>
+              <div id="upcomingList" class="task-list"></div>
+            </div>
+          </section>
+
+          <section id="projects" class="view">
+            <div class="split">
+              <form id="projectForm" class="panel admin-only">
+                <h3>Create project</h3>
+                <label>
+                  Project name
+                  <input name="name" required />
+                </label>
+                <label>
+                  Description
+                  <textarea name="description" rows="3"></textarea>
+                </label>
+                <label>
+                  Members
+                  <select name="members" id="projectMembers" multiple></select>
+                </label>
+                <button class="primary" type="submit">Create Project</button>
+                <p class="message" id="projectMessage"></p>
+              </form>
+              <div class="panel">
+                <div class="panel-head">
+                  <h3>Projects</h3>
+                </div>
+                <div id="projectList" class="cards"></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="tasks" class="view">
+            <div class="split">
+              <form id="taskForm" class="panel admin-only">
+                <h3>Create task</h3>
+                <label>
+                  Title
+                  <input name="title" required />
+                </label>
+                <label>
+                  Description
+                  <textarea name="description" rows="3"></textarea>
+                </label>
+                <label>
+                  Project
+                  <select name="project" id="taskProject" required></select>
+                </label>
+                <label>
+                  Assignee
+                  <select name="assignee" id="taskAssignee" required></select>
+                </label>
+                <div class="form-row">
+                  <label>
+                    Due date
+                    <input name="dueDate" type="date" required />
+                  </label>
+                  <label>
+                    Priority
+                    <select name="priority">
+                      <option>Medium</option>
+                      <option>High</option>
+                      <option>Low</option>
+                    </select>
+                  </label>
+                </div>
+                <button class="primary" type="submit">Create Task</button>
+                <p class="message" id="taskMessage"></p>
+              </form>
+              <div class="panel">
+                <div class="panel-head">
+                  <h3>Tasks</h3>
+                  <select id="statusFilter">
+                    <option value="">All status</option>
+                    <option>Todo</option>
+                    <option>In Progress</option>
+                    <option>Done</option>
+                  </select>
+                </div>
+                <div id="taskList" class="task-list"></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="team" class="view">
+            <div class="panel">
+              <div class="panel-head">
+                <h3>Team members</h3>
+              </div>
+              <div id="teamList" class="cards"></div>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+    <script src="/app.js"></script>
+  </body>
+</html>
