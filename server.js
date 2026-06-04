@@ -215,6 +215,36 @@ app.post(
   })
 );
 
+app.post(
+  "/api/auth/forgot-password",
+  asyncRoute(async (req, res) => {
+    requireFields(req.body, ["email"]);
+
+    const user = await User.findOne({ email: String(req.body.email).toLowerCase().trim() });
+    if (!user) return res.status(404).json({ message: "Email does not exist." });
+
+    res.json({ message: "Email verified. You can set a new password." });
+  })
+);
+
+app.post(
+  "/api/auth/reset-password",
+  asyncRoute(async (req, res) => {
+    requireFields(req.body, ["email", "password"]);
+
+    if (req.body.password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters." });
+    }
+
+    const user = await User.findOne({ email: String(req.body.email).toLowerCase().trim() });
+    if (!user) return res.status(404).json({ message: "Email does not exist." });
+
+    user.passwordHash = await bcrypt.hash(req.body.password, 12);
+    await user.save();
+
+    res.json({ message: "Password updated. You can login now." });
+  })
+);
 app.get("/api/auth/me", authenticate, (req, res) => {
   res.json({ user: publicUser(req.user) });
 });

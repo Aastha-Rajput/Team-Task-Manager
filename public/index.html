@@ -47,10 +47,15 @@
               Email
               <input name="email" type="email" autocomplete="email" required />
             </label>
-            <label>
+            <label id="passwordField">
               Password
               <input name="password" type="password" autocomplete="current-password" required minlength="6" />
             </label>
+            <label class="reset-field hidden">
+              Confirm new password
+              <input name="confirmPassword" type="password" autocomplete="new-password" minlength="6" />
+            </label>
+            <button class="text-action" type="button" id="forgotPasswordBtn">Forgot password?</button>
             <label class="signup-field hidden">
               Role
               <select name="role">

@@ -4,7 +4,8 @@ const state = {
   users: [],
   projects: [],
   tasks: [],
-  authMode: "login"
+  authMode: "login",
+  resetEmail: null
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -267,23 +268,68 @@ function selectedValues(select) {
   return Array.from(select.selectedOptions).map((option) => option.value);
 }
 
+function setAuthMode(mode) {
+  state.authMode = mode;
+  const isSignup = mode === "signup";
+  const isForgot = mode === "forgot";
+  const isReset = mode === "reset";
+  const passwordInput = document.querySelector('[name="password"]');
+  const confirmInput = document.querySelector('[name="confirmPassword"]');
+
+  $$(".segment").forEach((item) => item.classList.toggle("active", item.dataset.mode === mode));
+  $$(".signup-field").forEach((field) => field.classList.toggle("hidden", !isSignup));
+  $$(".reset-field").forEach((field) => field.classList.toggle("hidden", !isReset));
+  $("#passwordField").classList.toggle("hidden", isForgot);
+  $("#forgotPasswordBtn").classList.toggle("hidden", mode !== "login");
+
+  passwordInput.required = !isForgot;
+  passwordInput.autocomplete = isReset ? "new-password" : "current-password";
+  confirmInput.required = isReset;
+  $("#authSubmit").textContent = isSignup ? "Create account" : isForgot ? "Continue" : isReset ? "Update password" : "Login";
+  $("#authMessage").textContent = "";
+}
+
 function bindEvents() {
   $$(".segment").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.authMode = button.dataset.mode;
-      $$(".segment").forEach((item) => item.classList.toggle("active", item === button));
-      $$(".signup-field").forEach((field) => field.classList.toggle("hidden", state.authMode !== "signup"));
-      $("#authSubmit").textContent = state.authMode === "signup" ? "Create account" : "Login";
-      $("#authMessage").textContent = "";
-    });
+    button.addEventListener("click", () => setAuthMode(button.dataset.mode));
   });
+
+  $("#forgotPasswordBtn").addEventListener("click", () => setAuthMode("forgot"));
 
   $("#authForm").addEventListener("submit", async (event) => {
     event.preventDefault();
-    $("#authMessage").textContent = "";
+    showMessage("#authMessage", "");
+    const form = event.currentTarget;
+    const body = formData(form);
 
     try {
-      const body = formData(event.currentTarget);
+      if (state.authMode === "forgot") {
+        const result = await api("/api/auth/forgot-password", {
+          method: "POST",
+          body: JSON.stringify({ email: body.email })
+        });
+        state.resetEmail = body.email;
+        setAuthMode("reset");
+        showMessage("#authMessage", result.message, false);
+        return;
+      }
+
+      if (state.authMode === "reset") {
+        if (body.password !== body.confirmPassword) {
+          throw new Error("Passwords do not match.");
+        }
+
+        const result = await api("/api/auth/reset-password", {
+          method: "POST",
+          body: JSON.stringify({ email: body.email || state.resetEmail, password: body.password })
+        });
+        form.reset();
+        state.resetEmail = null;
+        setAuthMode("login");
+        showMessage("#authMessage", result.message, false);
+        return;
+      }
+
       const payload = await api(`/api/auth/${state.authMode}`, {
         method: "POST",
         body: JSON.stringify(body)
@@ -293,7 +339,7 @@ function bindEvents() {
       await loadData();
       toast(`Welcome, ${state.user.name}`);
     } catch (error) {
-      $("#authMessage").textContent = error.message;
+      showMessage("#authMessage", error.message);
     }
   });
 
@@ -305,7 +351,6 @@ function bindEvents() {
   $$(".nav-btn").forEach((button) => {
     button.addEventListener("click", () => switchView(button.dataset.view));
   });
-
   $("#quickTaskBtn").addEventListener("click", () => switchView("tasks"));
 
   $("#projectForm").addEventListener("submit", async (event) => {
